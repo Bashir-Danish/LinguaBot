@@ -11,16 +11,21 @@ import 'package:path_provider/path_provider.dart';
 import 'package:linguabot/models/message_model.dart';
 
 class ChatPage extends StatefulWidget {
+  final ValueNotifier<bool>? msgClearedNotifier;
+
+  ChatPage({this.msgClearedNotifier});
   @override
   State<ChatPage> createState() => _ChatPageState();
 }
 
 class _ChatPageState extends State<ChatPage> {
+  // --------  variables ---------//
   bool _isTyping = false;
-
+  List<Message> chatList = [];
   late TextEditingController _textEditingController;
   late ScrollController _scrollController;
   late FocusNode focusNode;
+
   List<String> tags = [
     'Grammar',
     'Part of Speech',
@@ -34,15 +39,34 @@ class _ChatPageState extends State<ChatPage> {
     'Tag12',
   ];
 
+// --------  Lifecycle hooks ---------//
   @override
   void initState() {
     _textEditingController = TextEditingController();
     _scrollController = ScrollController();
     focusNode = FocusNode();
     super.initState();
+    widget.msgClearedNotifier?.addListener(_handleMessagesCleared);
     _openMessageBox();
   }
+   @override
+  void dispose() {
+    _textEditingController.dispose();
+    _scrollController.dispose();
+    focusNode.dispose();
+    Hive.close();
+    widget.msgClearedNotifier?.removeListener(_handleMessagesCleared);
+    super.dispose();
+  }
 
+
+// --------  Functions ---------//
+
+  Future<void> _handleMessagesCleared() async{
+    final Box<Message> messagesBox = Hive.box<Message>('messages');
+    await messagesBox.clear();
+    _openMessageBox();
+  }
   Future<void> _openMessageBox() async {
     await Hive.openBox<Message>('messages');
     setState(() {
@@ -50,16 +74,8 @@ class _ChatPageState extends State<ChatPage> {
     });
   }
 
-  @override
-  void dispose() {
-    _textEditingController.dispose();
-    _scrollController.dispose();
-    focusNode.dispose();
-    Hive.close();
-    super.dispose();
-  }
+ 
 
-  List<Message> chatList = [];
   void onTagPressed(String tag) {
     print('Tag pressed: $tag');
   }

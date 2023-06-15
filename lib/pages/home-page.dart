@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:linguabot/models/message_model.dart';
 import 'package:linguabot/pages/translate-page.dart';
 import 'package:linguabot/pages/chat-page.dart';
 import 'package:linguabot/pages/voice-page.dart';
 import 'package:linguabot/utils/constants.dart';
+import 'package:hive/hive.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key}) : super(key: key);
@@ -14,31 +16,33 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-
+final ValueNotifier<bool> msgClearedNotifier = ValueNotifier(false);
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 3, vsync: this, initialIndex: 1);
   }
 
   @override
-  void dispose() {
+  void dispose(){
     _tabController.dispose();
     super.dispose();
   }
+
+ 
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize:const Size.fromHeight(80.0),
+        preferredSize: const Size.fromHeight(100.0),
         child: AppBar(
           elevation: 2,
           title: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            // mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Padding(
-                padding:const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.all(8.0),
                 child: Image.asset(
                   'assets/images/openai_logo.jpg',
                   width: 25,
@@ -50,39 +54,62 @@ class _MyHomePageState extends State<MyHomePage>
             ],
           ),
           automaticallyImplyLeading: false,
+          actions: [
+            PopupMenuButton<String>(
+              itemBuilder: (BuildContext context) => [
+                 PopupMenuItem<String>(
+                  value: 'logout',
+                  child: TextButton(
+                    onPressed: () {
+                    },
+                    child:const Text('Logout',style: TextStyle(color: Colors.black),),
+                  ),
+                ),
+                 PopupMenuItem<String>(
+                  value: 'reset_chat',
+                  child: TextButton(
+                    onPressed: () {
+                      setState(() {
+                        
+                      msgClearedNotifier.value = true;
+                      });
+                    },
+                    child:const Text('Reset',style: TextStyle(color: Colors.black),),
+                  ),
+                  
+                ),
+              ],
+            ),
+          ],
           bottom: TabBar(
             controller: _tabController,
             tabs: const [
               Tab(
                 icon: SizedBox(
                   height: 12,
-                  child: Icon(Icons.translate
-                  ),
+                  child: Icon(Icons.translate),
                 ),
               ),
               Tab(
-              icon: SizedBox(
+                icon: SizedBox(
                   height: 12,
-                  child: Icon(Icons.chat
-                  ),
+                  child: Icon(Icons.chat),
                 ),
               ),
               Tab(
-               icon: SizedBox(
+                icon: SizedBox(
                   height: 12,
-                  child: Icon(Icons.mic
-                  ),
+                  child: Icon(Icons.mic),
                 ),
               ),
             ],
             indicator: BoxDecoration(
               borderRadius: BorderRadius.circular(30),
-              color: const Color.fromARGB(255, 255, 255, 255)
+              color: const Color.fromARGB(255, 255, 255, 255),
             ),
             indicatorColor: kPrimaryColor,
             labelColor: kPrimaryColor,
             unselectedLabelColor: Colors.grey,
-            // indicatorSize: TabBarIndicatorSize.label
           ),
           centerTitle: true,
         ),
@@ -91,34 +118,18 @@ class _MyHomePageState extends State<MyHomePage>
         controller: _tabController,
         children: <Widget>[
           TranslatePage(),
-          ChatPage(),
+          ChatPage(msgClearedNotifier: msgClearedNotifier,),
           const VoicePage(),
         ],
       ),
-      // bottomNavigationBar: BottomNavigationBar(
-      //   items: const <BottomNavigationBarItem>[
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.translate),
-      //       label: 'Translate',
-      //     ),
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.chat),
-      //       label: 'Chat',
-      //     ),
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.mic),
-      //       label: 'Voice',
-      //     ),
-      //   ],
-      //   currentIndex: _tabController.index,
-      //   selectedItemColor: Colors.blue,
-      //   unselectedItemColor: Colors.grey,
-      //   onTap: (index) {
-      //     setState(() {
-      //       _tabController.index = index;
-      //     });
-      //   },
-      // ),
     );
   }
 }
+
+
+
+
+// Future<void> deleteAllMessages() async {
+//   final Box<Message> messagesBox = Hive.box<Message>('messages');
+//   await messagesBox.clear();
+// }
