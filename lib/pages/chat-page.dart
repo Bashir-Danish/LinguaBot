@@ -17,6 +17,7 @@ class _ChatPageState extends State<ChatPage> {
   bool _isTyping = false;
 
   late TextEditingController textEditingController;
+  late ScrollController _scrollController;
   late FocusNode focusNode;
   List<String> tags = [
     'Grammar',
@@ -34,6 +35,7 @@ class _ChatPageState extends State<ChatPage> {
   @override
   void initState() {
     textEditingController = TextEditingController();
+    _scrollController = ScrollController();
     focusNode = FocusNode();
     super.initState();
   }
@@ -41,6 +43,7 @@ class _ChatPageState extends State<ChatPage> {
   @override
   void dispose() {
     textEditingController.dispose();
+    _scrollController.dispose();
     focusNode.dispose();
     super.dispose();
   }
@@ -80,6 +83,7 @@ class _ChatPageState extends State<ChatPage> {
             ),
             Flexible(
               child: ListView.builder(
+                controller: _scrollController,
                 itemCount: chatList.length,
                 itemBuilder: (context, index) {
                   return ChatWidget(
@@ -136,6 +140,11 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
+  void scrollListToBottom() {
+    _scrollController.animateTo(_scrollController.position.maxScrollExtent,
+        duration: Duration(milliseconds:500 ), curve: Curves.easeOut);
+  }
+
   Future<void> sendMessageFCT() async {
     String messageText =
         textEditingController.text; // Store the value before clearing
@@ -149,13 +158,15 @@ class _ChatPageState extends State<ChatPage> {
     try {
       print(messageText);
       chatList.addAll(
-        await ApiService.sendMessage(newMessage: messageText, userId: '6489e8df31bd4b3e10691e58'),
+        await ApiService.sendMessage(
+            newMessage: messageText, userId: '6489e8df31bd4b3e10691e58'),
       );
       setState(() {});
     } catch (e) {
       log('error 2 $e');
     } finally {
       setState(() {
+        scrollListToBottom();
         _isTyping = false;
       });
     }
