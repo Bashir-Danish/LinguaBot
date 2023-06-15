@@ -3,11 +3,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:linguabot/components/chat_widget.dart';
-import 'package:linguabot/models/chat_model.dart';
 import 'package:linguabot/services/api_services.dart';
 import 'package:linguabot/utils/constants.dart';
 import 'package:hive/hive.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:linguabot/models/message_model.dart';
 
 class ChatPage extends StatefulWidget {
@@ -26,18 +24,7 @@ class _ChatPageState extends State<ChatPage> {
   late ScrollController _scrollController;
   late FocusNode focusNode;
 
-  List<String> tags = [
-    'Grammar',
-    'Part of Speech',
-    'Tenses',
-    'Tag5',
-    'Tag7',
-    'Tag8',
-    'Tag9',
-    'Tag10',
-    'Tag11',
-    'Tag12',
-  ];
+  
 
 // --------  Lifecycle hooks ---------//
   @override
@@ -49,7 +36,8 @@ class _ChatPageState extends State<ChatPage> {
     widget.msgClearedNotifier?.addListener(_handleMessagesCleared);
     _openMessageBox();
   }
-   @override
+
+  @override
   void dispose() {
     _textEditingController.dispose();
     _scrollController.dispose();
@@ -57,27 +45,6 @@ class _ChatPageState extends State<ChatPage> {
     Hive.close();
     widget.msgClearedNotifier?.removeListener(_handleMessagesCleared);
     super.dispose();
-  }
-
-
-// --------  Functions ---------//
-
-  Future<void> _handleMessagesCleared() async{
-    final Box<Message> messagesBox = Hive.box<Message>('messages');
-    await messagesBox.clear();
-    _openMessageBox();
-  }
-  Future<void> _openMessageBox() async {
-    await Hive.openBox<Message>('messages');
-    setState(() {
-      chatList = Hive.box<Message>('messages').values.toList();
-    });
-  }
-
- 
-
-  void onTagPressed(String tag) {
-    print('Tag pressed: $tag');
   }
 
   @override
@@ -93,7 +60,7 @@ class _ChatPageState extends State<ChatPage> {
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                children: tags.map((tag) {
+                children: kTags.keys.map((tag) {
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 5.0),
                     child: ElevatedButton(
@@ -141,8 +108,8 @@ class _ChatPageState extends State<ChatPage> {
                       child: TextField(
                         focusNode: focusNode,
                         controller: _textEditingController,
-                        onSubmitted: (value) {
-                          //TODO send message
+                        onSubmitted: (value) async{
+                          await sendMessageFCT();
                         },
                         decoration: const InputDecoration.collapsed(
                           hintText: 'How can I help you',
@@ -165,6 +132,62 @@ class _ChatPageState extends State<ChatPage> {
         ),
       ),
     );
+  }
+
+// -----------------------------------  Functions ----------------------------------------//
+
+  Future<void> _handleMessagesCleared() async {
+    final Box<Message> messagesBox = Hive.box<Message>('messages');
+    await messagesBox.clear();
+    _openMessageBox();
+  }
+
+  Future<void> _openMessageBox() async {
+    await Hive.openBox<Message>('messages');
+    setState(() {
+      chatList = Hive.box<Message>('messages').values.toList();
+    });
+  }
+
+  Future<void> onTagPressed(String tag) async {
+    String messageText = kTags[tag]!;
+    Message userMessage = Message(
+      userId: '6489e8df31bd4b3e10691e58',
+      message: tag,
+      isUser: true,
+      msgType: 'msg',
+    );
+    setState(() {
+      _isTyping = true;
+      chatList.add(userMessage);
+      Hive.box<Message>('messages').add(userMessage);
+      _textEditingController.clear();
+      focusNode.unfocus();
+      scrollListToBottom();
+    });
+    try {
+      List<Message> botMessages = await ApiService.sendMessage(chatStory: [
+        {
+          'role': 'user',
+          'content': messageText,
+        }
+      ], userId: '6489e8df31bd4b3e10691e58');
+
+      for (Message botMessage in botMessages) {
+        Hive.box<Message>('messages').add(botMessage);
+      }
+
+      setState(() {
+        chatList.addAll(botMessages);
+      });
+    } catch (e) {
+      log('error 2 $e');
+    } finally {
+      setState(() {
+        _isTyping = false;
+        scrollListToBottom();
+      });
+    }
   }
 
   void scrollListToBottom() {

@@ -32,3 +32,11 @@ final kTagStyle = ElevatedButton.styleFrom(
   ),
   elevation: 2,
 );
+
+
+
+Map<String, String> kTags = {
+    'Grammar': 'Tell me about grammar of English',
+    'Part of Speech': 'Tell me about Part of Speech of English',
+    'Tenses': 'Tell me about grammar of tense',
+  };

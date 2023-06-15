@@ -9,7 +9,7 @@ import 'package:linguabot/utils/api_const.dart';
 class ApiService {
 
   static Future<List<Message>> sendMessage(
-      {required String userId, required List chatStory }) async {
+      {required String userId, required dynamic chatStory }) async {
 
     final response = await http.post(
       Uri.parse("http://192.168.20.246:5000/message/conversation"),
