@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -7,6 +6,9 @@ import 'package:linguabot/components/chat_widget.dart';
 import 'package:linguabot/models/chat_model.dart';
 import 'package:linguabot/services/api_services.dart';
 import 'package:linguabot/utils/constants.dart';
+import 'package:hive/hive.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:linguabot/models/message_model.dart';
 
 class ChatPage extends StatefulWidget {
   @override
@@ -16,7 +18,7 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   bool _isTyping = false;
 
-  late TextEditingController textEditingController;
+  late TextEditingController _textEditingController;
   late ScrollController _scrollController;
   late FocusNode focusNode;
   List<String> tags = [
@@ -34,21 +36,30 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   void initState() {
-    textEditingController = TextEditingController();
+    _textEditingController = TextEditingController();
     _scrollController = ScrollController();
     focusNode = FocusNode();
     super.initState();
+    _openMessageBox();
+  }
+
+  Future<void> _openMessageBox() async {
+    await Hive.openBox<Message>('messages');
+    setState(() {
+      chatList = Hive.box<Message>('messages').values.toList();
+    });
   }
 
   @override
   void dispose() {
-    textEditingController.dispose();
+    _textEditingController.dispose();
     _scrollController.dispose();
     focusNode.dispose();
+    Hive.close();
     super.dispose();
   }
 
-  List<ChatModel> chatList = [];
+  List<Message> chatList = [];
   void onTagPressed(String tag) {
     print('Tag pressed: $tag');
   }
@@ -87,7 +98,7 @@ class _ChatPageState extends State<ChatPage> {
                 itemCount: chatList.length,
                 itemBuilder: (context, index) {
                   return ChatWidget(
-                    message: chatList[index].msg.toString(),
+                    message: chatList[index].message.toString(),
                     isUser: chatList[index].isUser,
                   );
                 },
@@ -113,7 +124,7 @@ class _ChatPageState extends State<ChatPage> {
                     Expanded(
                       child: TextField(
                         focusNode: focusNode,
-                        controller: textEditingController,
+                        controller: _textEditingController,
                         onSubmitted: (value) {
                           //TODO send message
                         },
@@ -141,33 +152,51 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void scrollListToBottom() {
-    _scrollController.animateTo(_scrollController.position.maxScrollExtent,
-        duration: Duration(milliseconds:500 ), curve: Curves.easeOut);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollController.animateTo(_scrollController.position.maxScrollExtent,
+          duration: Duration(milliseconds: 500), curve: Curves.easeOut);
+    });
   }
 
   Future<void> sendMessageFCT() async {
-    String messageText =
-        textEditingController.text; // Store the value before clearing
+    String messageText = _textEditingController.text;
+    Message userMessage = Message(
+      userId: '6489e8df31bd4b3e10691e58',
+      message: messageText,
+      isUser: true,
+      msgType: 'msg',
+    );
     setState(() {
       _isTyping = true;
-      chatList.add(ChatModel(msg: messageText, isUser: true, msgType: 'msg'));
-      textEditingController.clear();
+      chatList.add(userMessage);
+      Hive.box<Message>('messages').add(userMessage);
+      _textEditingController.clear();
       focusNode.unfocus();
+      scrollListToBottom();
     });
-
+    List<Map<String, String>> previous = chatList.map((message) {
+      return {
+        'role': message.isUser ? 'user' : 'assistant',
+        'content': message.message,
+      };
+    }).toList();
     try {
-      print(messageText);
-      chatList.addAll(
-        await ApiService.sendMessage(
-            newMessage: messageText, userId: '6489e8df31bd4b3e10691e58'),
-      );
-      setState(() {});
+      List<Message> botMessages = await ApiService.sendMessage(
+          chatStory: previous, userId: '6489e8df31bd4b3e10691e58');
+
+      for (Message botMessage in botMessages) {
+        Hive.box<Message>('messages').add(botMessage);
+      }
+
+      setState(() {
+        chatList.addAll(botMessages);
+      });
     } catch (e) {
       log('error 2 $e');
     } finally {
       setState(() {
-        scrollListToBottom();
         _isTyping = false;
+        scrollListToBottom();
       });
     }
   }

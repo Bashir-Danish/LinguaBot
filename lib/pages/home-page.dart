@@ -31,7 +31,7 @@ class _MyHomePageState extends State<MyHomePage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(80.0),
+        preferredSize:const Size.fromHeight(80.0),
         child: AppBar(
           elevation: 2,
           title: Row(
@@ -92,7 +92,7 @@ class _MyHomePageState extends State<MyHomePage>
         children: <Widget>[
           TranslatePage(),
           ChatPage(),
-          VoicePage(),
+          const VoicePage(),
         ],
       ),
       // bottomNavigationBar: BottomNavigationBar(
