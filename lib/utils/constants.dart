@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+const kBaseUrl = 'http://192.168.20.246:5000';
 const kScaffoldBackgroundColor = Color(0xFFFBFBFB);
 const kPrimaryColor= Color(0xFF6C82F9);
 
