@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:linguabot/pages/home-page.dart';
 import 'package:linguabot/utils/constants.dart';
+import 'package:linguabot/pages/auth-page.dart';
 
 class SplashPage extends StatelessWidget {
   const SplashPage({Key? key}) : super(key: key);
@@ -64,7 +65,7 @@ class SplashPage extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const MyHomePage()),
+                    MaterialPageRoute(builder: (context) => AuthPage()),
                   );
                 },
                 icon: const Icon(Icons.arrow_forward_ios_outlined,

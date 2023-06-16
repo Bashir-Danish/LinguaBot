@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:linguabot/services/api_services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:linguabot/utils/constants.dart';
+import 'package:flutter/services.dart';
 
 class TranslatePage extends StatefulWidget {
   @override
@@ -15,25 +16,34 @@ class _TranslatePageState extends State<TranslatePage> {
   String _language1 = 'English';
   String _language2 = 'Persian';
   bool _loading = false;
+  bool _isFocused = false;
 
   Future<void> translate() async {
     String inputText = _inputController.text;
-    setState(() {
-    _loading = true;
-   _outputController.clear();
-  });
-    try {
-      String translatedText = await ApiService.translateText(
-          'Translate this text from $_language1 to $_language2 :$inputText');
+    if (inputText.isNotEmpty) {
       setState(() {
-        _outputController.text = translatedText;
+        _loading = true;
+        _outputController.clear();
       });
-    } catch (e) {
-      print("error 1: $e");
-    }finally{
-      setState(() {
-      _loading = false;
-    });
+      try {
+        String translatedText = await ApiService.translateText(
+            'Translate this text from $_language1 to $_language2 :$inputText');
+        setState(() {
+          _outputController.text = translatedText;
+        });
+      } catch (e) {
+        print("error 1: $e");
+      } finally {
+        setState(() {
+          _loading = false;
+        });
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please write something to translate'),
+        ),
+      );
     }
   }
 
@@ -42,7 +52,18 @@ class _TranslatePageState extends State<TranslatePage> {
       String temp = _language1;
       _language1 = _language2;
       _language2 = temp;
+      _inputController.clear();
+      _outputController.clear();
     });
+  }
+
+  void _copyTranslation() {
+    Clipboard.setData(ClipboardData(text: _outputController.text));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Translation copied to clipboard'),
+      ),
+    );
   }
 
   @override
@@ -68,8 +89,11 @@ class _TranslatePageState extends State<TranslatePage> {
               child: TextField(
                 controller: _inputController,
                 decoration: const InputDecoration(
-                  labelText: 'Input',
+                  // labelText: 'Input',
                   border: OutlineInputBorder(),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: kPrimaryColor),
+                  ),
                 ),
                 maxLines: null,
                 expands: true,
@@ -82,8 +106,8 @@ class _TranslatePageState extends State<TranslatePage> {
           ElevatedButton(
             onPressed: translate,
             style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all<Color>(kPrimaryColor), 
-              ),
+              backgroundColor: MaterialStateProperty.all<Color>(kPrimaryColor),
+            ),
             child: const Text('Translate'),
           ),
           Expanded(
@@ -94,18 +118,40 @@ class _TranslatePageState extends State<TranslatePage> {
                   TextField(
                     controller: _outputController,
                     decoration: const InputDecoration(
-                      // labelText: 'Output',
+                      labelText: 'Translation',
+                      floatingLabelBehavior: FloatingLabelBehavior.always,
                       border: OutlineInputBorder(),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: kPrimaryColor),
+                      ),
                     ),
+                    textDirection: _language1 == 'Persian'
+                        ? TextDirection.ltr
+                        : TextDirection.rtl,
                     maxLines: null,
                     expands: true,
                     readOnly: true,
+                    onTap: () {
+                      setState(() {
+                        _isFocused = true;
+                      });
+                    },
                   ),
                   if (_loading)
                     const Center(
-                      child: SpinKitFadingCircle(
+                      child: SpinKitSpinningLines(
                         color: kPrimaryColor,
                         size: 50.0,
+                      ),
+                    ),
+                  if (_isFocused && !_loading)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: IconButton(
+                        onPressed: _copyTranslation,
+                        icon: const Icon(Icons.copy),
+                        color: kPrimaryColor,
                       ),
                     ),
                 ],

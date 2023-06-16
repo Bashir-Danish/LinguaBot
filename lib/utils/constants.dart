@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 const kBaseUrl = 'http://192.168.20.246:5000';
 const kScaffoldBackgroundColor = Color(0xFFFBFBFB);
 const kPrimaryColor= Color(0xFF6C82F9);
+Color secondaryColor = Color(0xFFE8F5E9);
 
 
 final kMyTheme = ThemeData(
@@ -32,6 +33,12 @@ final kTagStyle = ElevatedButton.styleFrom(
     side: const BorderSide(color: Color(0xFF6C82F9)),
   ),
   elevation: 2,
+);
+
+TextStyle kTitleStyle =const TextStyle(
+  fontSize: 24,
+  fontWeight: FontWeight.bold,
+  color: kPrimaryColor,
 );
 
 
