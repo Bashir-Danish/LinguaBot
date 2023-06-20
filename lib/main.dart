@@ -9,7 +9,11 @@ import 'package:path_provider/path_provider.dart' as path_provider;
 
 void main() async {
   await Hive.initFlutter();
-  await initializeHive();
+ WidgetsFlutterBinding.ensureInitialized();
+  Hive.registerAdapter(MessageAdapter());
+  Hive.registerAdapter(UserModelAdapter());
+  await Hive.openBox<Message>('messages');
+  await Hive.openBox<UserModel>('users');
   runApp(MyApp());
 }
 
@@ -26,9 +30,4 @@ class MyApp extends StatelessWidget {
   }
 }
 
-Future<void> initializeHive() async {
-  Hive.registerAdapter(MessageAdapter());
-  Hive.registerAdapter(UserModelAdapter());
-  await Hive.openBox<Message>('messages');
-  await Hive.openBox<UserModel>('users');
-}
+

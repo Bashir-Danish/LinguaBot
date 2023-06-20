@@ -20,7 +20,7 @@ class UserModelAdapter extends TypeAdapter<UserModel> {
       userId: fields[0] as String,
       username: fields[1] as String,
       email: fields[2] as String,
-      token: fields[3] as dynamic,
+      token: fields[3] as String,
     );
   }
 

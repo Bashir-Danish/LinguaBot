@@ -15,6 +15,7 @@ class AuthPage extends StatefulWidget {
 class _AuthPageState extends State<AuthPage> {
   bool _signUpLoader = false;
   bool _loginLoader = false;
+  PageController _pageController = PageController();
 
   late TextEditingController _loginEmailController;
 
@@ -93,6 +94,7 @@ class _AuthPageState extends State<AuthPage> {
               SizedBox(
                 height: 500,
                 child: PageView(
+                  controller: _pageController,
                   children: [
                     Card(
                       elevation: 4.0,
@@ -166,6 +168,16 @@ class _AuthPageState extends State<AuthPage> {
                                     ),
                                     child: const Text('Login'),
                                   ),
+                            TextButton(
+                              onPressed: () {
+                                _pageController.animateToPage(
+                                  1,
+                                  duration: Duration(milliseconds: 500),
+                                  curve: Curves.easeInOutCubic,
+                                );
+                              },
+                              child: const Text('Create Account'),
+                            ),
                             const SizedBox(height: 16),
                             Text(
                               errorMessage ?? '',
@@ -209,7 +221,7 @@ class _AuthPageState extends State<AuthPage> {
                                 controller: _signupUsrenameController,
                                 decoration: const InputDecoration(
                                   labelText: 'Username',
-                                  prefixIcon: Icon(Icons.email),
+                                  prefixIcon: Icon(Icons.person),
                                 ),
                               ),
                             ),
@@ -260,6 +272,16 @@ class _AuthPageState extends State<AuthPage> {
                                     ),
                                     child: const Text('SignUp'),
                                   ),
+                            TextButton(
+                              onPressed: () {
+                                _pageController.animateToPage(
+                                  0,
+                                  duration: Duration(milliseconds: 400),
+                                  curve: Curves.easeInOutCubic,
+                                );
+                              },
+                              child: const Text('Already have account'),
+                            ),
                             const SizedBox(height: 16),
                             Text(
                               errorMessage ?? '',
@@ -284,6 +306,12 @@ class _AuthPageState extends State<AuthPage> {
   //// -------------------- ّFunctions ------------------////
 
   Future<void> signup() async {
+    Box userBox;
+    if (Hive.isBoxOpen('users')) {
+      userBox = Hive.box<UserModel>('users');
+    } else {
+      userBox = await Hive.openBox<UserModel>('users');
+    }
     String username = _signupUsrenameController.text;
     String email = _signupEmailController.text;
     String password = _signupPassController.text;
@@ -313,8 +341,7 @@ class _AuthPageState extends State<AuthPage> {
         _signUpLoader = false;
       });
     }
-    Box box = Hive.box<UserModel>('users');
-    UserModel? user = box.get('user');
+    UserModel? user = userBox.get('user');
 
     if (user != null && user is UserModel) {
       if (user.token != null && user.token != '') {
@@ -327,10 +354,17 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   Future<void> login() async {
+    Box userBox;
+    if (Hive.isBoxOpen('users')) {
+      userBox = Hive.box<UserModel>('users');
+    } else {
+      userBox = await Hive.openBox<UserModel>('users');
+    }
+
     String email = _loginEmailController.text;
     String password = _loginPassController.text;
 
-     if (email.isEmpty || password.isEmpty) {
+    if (email.isEmpty || password.isEmpty) {
       setState(() {
         errorMessage = 'Please fill inputs';
       });
@@ -356,8 +390,7 @@ class _AuthPageState extends State<AuthPage> {
         _loginLoader = false;
       });
     }
-    Box box = Hive.box<UserModel>('users');
-    UserModel? user = box.get('user');
+    UserModel? user = userBox.get('user');
 
     if (user != null && user is UserModel) {
       if (user.token != null && user.token != '') {

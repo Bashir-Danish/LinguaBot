@@ -14,8 +14,13 @@ class SplashPage extends StatefulWidget {
 
 class _SplashPageState extends State<SplashPage> {
   Future<void> redirectPage() async {
-    Box box = Hive.box<UserModel>('users');
-    UserModel? user = box.get('user'); // Note the nullable type
+    Box userBox;
+   if (Hive.isBoxOpen('users')) {
+      userBox = Hive.box<UserModel>('users');
+    } else {
+      userBox = await Hive.openBox<UserModel>('users');
+    }
+    UserModel? user = userBox.get('user');
 
     if (user != null && user is UserModel) {
       if (user.token != null && user.token != '') {

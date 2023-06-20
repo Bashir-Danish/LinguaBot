@@ -6,8 +6,13 @@ class NetworkHelper {
 
   NetworkHelper(this.url);
 
-  Future<dynamic> getData() async {
-    http.Response response = await http.get(Uri.parse(url));
+ Future<dynamic> getData({String? token}) async {
+    Map<String, String> headers = {'Content-Type': 'application/json'};
+    if (token != null) {
+      headers['Authorization'] = token;
+    }
+
+    http.Response response = await http.get(Uri.parse(url), headers: headers);
 
     if (response.statusCode == 200) {
       String data = response.body;
@@ -17,12 +22,17 @@ class NetworkHelper {
     }
   }
 
-  Future<dynamic> postData(Map<String, dynamic> data) async {
+ Future<dynamic> postData(Map<String, dynamic> data, {String? token}) async {
     try {
+      Map<String, String> headers = {'Content-Type': 'application/json'};
+      if (token != null) {
+        headers['Authorization'] = token;
+      }
+
       http.Response response = await http.post(
         Uri.parse(url),
         body: jsonEncode(data),
-        headers: {'Content-Type': 'application/json'},
+        headers: headers,
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {

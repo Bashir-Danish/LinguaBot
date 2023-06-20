@@ -1,9 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:linguabot/services/api_services.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:linguabot/utils/constants.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:linguabot/services/api_services.dart';
+import 'package:linguabot/utils/constants.dart';
 
 class TranslatePage extends StatefulWidget {
   @override
@@ -70,21 +70,22 @@ class _TranslatePageState extends State<TranslatePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      body: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Text(_language1),
-              TextButton(
-                onPressed: _switchLanguages,
-                child: const Icon(Icons.swap_horiz),
-              ),
-              Text(_language2),
-            ],
-          ),
-          Expanded(
-            child: Padding(
+      body: SingleChildScrollView(
+        physics: NeverScrollableScrollPhysics(),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Text(_language1),
+                TextButton(
+                  onPressed: _switchLanguages,
+                  child: const Icon(Icons.swap_horiz),
+                ),
+                Text(_language2),
+              ],
+            ),
+            Padding(
               padding: const EdgeInsets.all(8.0),
               child: TextField(
                 controller: _inputController,
@@ -102,16 +103,15 @@ class _TranslatePageState extends State<TranslatePage> {
                     : TextDirection.ltr,
               ),
             ),
-          ),
-          ElevatedButton(
-            onPressed: translate,
-            style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.all<Color>(kPrimaryColor),
+            ElevatedButton(
+              onPressed: translate,
+              style: ButtonStyle(
+                backgroundColor:
+                    MaterialStateProperty.all<Color>(kPrimaryColor),
+              ),
+              child: const Text('Translate'),
             ),
-            child: const Text('Translate'),
-          ),
-          Expanded(
-            child: Padding(
+            Padding(
               padding: const EdgeInsets.all(8.0),
               child: Stack(
                 children: [
@@ -157,8 +157,8 @@ class _TranslatePageState extends State<TranslatePage> {
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

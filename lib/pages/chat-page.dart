@@ -41,7 +41,6 @@ class _ChatPageState extends State<ChatPage> {
     _textEditingController.dispose();
     _scrollController.dispose();
     focusNode.dispose();
-    Hive.close();
     widget.msgClearedNotifier?.removeListener(_handleMessagesCleared);
     super.dispose();
   }
@@ -136,35 +135,53 @@ class _ChatPageState extends State<ChatPage> {
 // -----------------------------------  Functions ----------------------------------------//
 
   Future<void> _handleMessagesCleared() async {
-    final Box<Message> messagesBox = Hive.box<Message>('messages');
+    Box<Message> messagesBox;
+    if (Hive.isBoxOpen('messages')) {
+      messagesBox = Hive.box<Message>('messages');
+    } else {
+      messagesBox = await Hive.openBox<Message>('messages');
+    }
     await messagesBox.clear();
     _openMessageBox();
   }
 
   Future<void> _openMessageBox() async {
-    await Hive.openBox<Message>('messages');
+    Box<Message> box;
+    if (Hive.isBoxOpen('messages')) {
+      box = Hive.box<Message>('messages');
+    } else {
+      box = await Hive.openBox<Message>('messages');
+    }
     setState(() {
-      chatList = Hive.box<Message>('messages').values.toList();
+      chatList = box.values.toList();
     });
   }
 
   Future<void> onTagPressed(String tag) async {
-    await Hive.openBox<UserModel>('users');
-    Box box = Hive.box<UserModel>('users');
-    UserModel user = box.get('user');
-    await Hive.openBox<Message>('messages');
+    Box<Message> messagesBox;
+    Box userBox;
+    if (Hive.isBoxOpen('messages')) {
+      messagesBox = Hive.box<Message>('messages');
+    } else {
+      messagesBox = await Hive.openBox<Message>('messages');
+    }
+    if (Hive.isBoxOpen('users')) {
+      userBox = Hive.box<UserModel>('users');
+    } else {
+      userBox = await Hive.openBox<UserModel>('users');
+    }
+    UserModel user = userBox.get('user');
     String messageText = kTags[tag]!;
 
     Message userMessage = Message(
       userId: user.userId,
       message: tag,
       isUser: true,
-      msgType: 'msg',
     );
     setState(() {
       _isTyping = true;
       chatList.add(userMessage);
-      Hive.box<Message>('messages').add(userMessage);
+      messagesBox.add(userMessage);
       _textEditingController.clear();
       focusNode.unfocus();
       scrollListToBottom();
@@ -182,7 +199,7 @@ class _ChatPageState extends State<ChatPage> {
       );
 
       for (Message botMessage in botMessages) {
-        Hive.box<Message>('messages').add(botMessage);
+        messagesBox.add(botMessage);
       }
 
       setState(() {
@@ -207,48 +224,58 @@ class _ChatPageState extends State<ChatPage> {
 
   Future<void> sendMessageFCT() async {
     String messageText = _textEditingController.text;
-    await Hive.openBox<UserModel>('users');
-    Box box = Hive.box<UserModel>('users');
-    UserModel user = box.get('user');
-
-    Message userMessage = Message(
-      userId: user.userId,
-      message: messageText,
-      isUser: true,
-      msgType: 'msg',
-    );
-    setState(() {
-      _isTyping = true;
-      chatList.add(userMessage);
-      Hive.box<Message>('messages').add(userMessage);
-      _textEditingController.clear();
-      focusNode.unfocus();
-      scrollListToBottom();
-    });
-    List<Map<String, String>> previous = chatList.map((message) {
-      return {
-        'role': message.isUser ? 'user' : 'assistant',
-        'content': message.message,
-      };
-    }).toList();
-    try {
-      List<Message> botMessages = await ApiService.sendMessage(
-          userId: user.userId, newMsg: messageText, chatStory: previous);
-
-      for (Message botMessage in botMessages) {
-        Hive.box<Message>('messages').add(botMessage);
-      }
-
+    Box<Message> messagesBox;
+    Box userBox;
+    if (Hive.isBoxOpen('messages')) {
+      messagesBox = Hive.box<Message>('messages');
+    } else {
+      messagesBox = await Hive.openBox<Message>('messages');
+    }
+    if (Hive.isBoxOpen('users')) {
+      userBox = Hive.box<UserModel>('users');
+    } else {
+      userBox = await Hive.openBox<UserModel>('users');
+    }
+    UserModel user = userBox.get('user');
+    if (messageText.isNotEmpty) {
+      Message userMessage = Message(
+        userId: user.userId,
+        message: messageText,
+        isUser: true,
+      );
       setState(() {
-        chatList.addAll(botMessages);
-      });
-    } catch (e) {
-      log('error 2 $e');
-    } finally {
-      setState(() {
-        _isTyping = false;
+        _isTyping = true;
+        chatList.add(userMessage);
+        messagesBox.add(userMessage);
+        _textEditingController.clear();
+        focusNode.unfocus();
         scrollListToBottom();
       });
+      List<Map<String, String>> previous = chatList.map((message) {
+        return {
+          'role': message.isUser ? 'user' : 'assistant',
+          'content': message.message,
+        };
+      }).toList();
+      try {
+        List<Message> botMessages = await ApiService.sendMessage(
+            userId: user.userId, newMsg: messageText, chatStory: previous);
+
+        for (Message botMessage in botMessages) {
+          messagesBox.add(botMessage);
+        }
+
+        setState(() {
+          chatList.addAll(botMessages);
+        });
+      } catch (e) {
+        log('error 2 $e');
+      } finally {
+        setState(() {
+          _isTyping = false;
+          scrollListToBottom();
+        });
+      }
     }
   }
 }

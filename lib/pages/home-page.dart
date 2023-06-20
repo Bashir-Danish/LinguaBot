@@ -16,28 +16,43 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage>
     with SingleTickerProviderStateMixin {
+  late String username;    
   late TabController _tabController;
   final ValueNotifier<bool> msgClearedNotifier = ValueNotifier(false);
   @override
   void initState() {
+    Box userBox;
     super.initState();
+    if (Hive.isBoxOpen('users')) {
+      userBox = Hive.box<UserModel>('users');
+    } else {
+      userBox = Hive.openBox<UserModel>('users') as Box;
+    }
+    UserModel user = userBox.get('user');
+    username = user.username;
     _tabController = TabController(length: 3, vsync: this, initialIndex: 1);
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    Hive.close();
     super.dispose();
   }
 
- Future<void> logout() async {
-   Box user = Hive.box<UserModel>('users');
-    await user.clear();
-     // ignore: use_build_context_synchronously
-     Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) =>const SplashPage()),
-      );
+  Future<void> logout() async {
+    Box userBox;
+    if (Hive.isBoxOpen('users')) {
+      userBox = Hive.box<UserModel>('users');
+    } else {
+      userBox = await Hive.openBox<UserModel>('users');
+    }
+    await userBox.clear();
+    // ignore: use_build_context_synchronously
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const SplashPage()),
+    );
   }
 
   @override
@@ -72,10 +87,19 @@ class _MyHomePageState extends State<MyHomePage>
                     onPressed: () {
                       logout();
                     },
-                    child: const Text(
-                      'Logout',
-                      style: TextStyle(color: Colors.black),
-                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          username,
+                          style: const TextStyle(color: Colors.black),
+                        ),
+                        const Icon(
+                          Icons.logout,
+                          color: Colors.black,
+                          size: 16,
+                        )
+                      ],)
                   ),
                 ),
                 PopupMenuItem<String>(
@@ -86,9 +110,19 @@ class _MyHomePageState extends State<MyHomePage>
                         msgClearedNotifier.value = true;
                       });
                     },
-                    child: const Text(
-                      'Reset',
-                      style: TextStyle(color: Colors.black),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Reset',
+                          style: TextStyle(color: Colors.black),
+                        ),
+                        Icon(
+                          Icons.restart_alt,
+                          color: Colors.black,
+                          size: 16,
+                        )
+                      ],
                     ),
                   ),
                 ),

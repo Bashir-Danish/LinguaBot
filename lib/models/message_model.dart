@@ -13,8 +13,7 @@ class Message {
   @HiveField(2)
   final bool isUser;
 
-  @HiveField(3)
-  final msgType;
 
-  Message({required this.userId, required this.message, required this.isUser, required this.msgType});
+
+  Message({required this.userId, required this.message, required this.isUser});
 }
