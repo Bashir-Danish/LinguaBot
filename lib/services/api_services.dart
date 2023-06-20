@@ -7,7 +7,9 @@ import 'package:linguabot/services/networking.dart';
 
 class ApiService {
   static Future<List<Message>> sendMessage(
-      {required String userId, required dynamic chatStory ,required String newMsg}) async {
+      {required String userId,
+      required dynamic chatStory,
+      required String newMsg}) async {
     // await Hive.openBox<UserModel>('users');
     Box box = Hive.box<UserModel>('users');
     UserModel user = box.get('user');
@@ -15,10 +17,10 @@ class ApiService {
         NetworkHelper("http://192.168.20.246:5000/message/conversation");
     final responseBody = await networkHelper.postData({
       'userId': userId,
-      'newMessage':newMsg,
+      'newMessage': newMsg,
       'chatStory': chatStory,
-    },token: user.token);
-  
+    }, token: user.token);
+
     List<Message> chatList = [];
     chatList.add(Message(
       userId: user.userId,
@@ -29,22 +31,33 @@ class ApiService {
   }
 
   static Future<dynamic> translateText(String text) async {
-    // await Hive.openBox<UserModel>('users');
-    Box box = Hive.box<UserModel>('users');
-    UserModel user = box.get('user');
+    Box userBox;
+    if (Hive.isBoxOpen('users')) {
+      userBox = Hive.box<UserModel>('users');
+    } else {
+      userBox = await Hive.openBox<UserModel>('users');
+    }
+    UserModel user = userBox.get('user');
     NetworkHelper networkHelper =
         NetworkHelper("http://192.168.20.246:5000/message/translate");
-    final responseBody = await networkHelper.postData({'text': text},token: user.token);
+    final responseBody =
+        await networkHelper.postData({'text': text}, token: user.token);
 
     return responseBody['translatedText'];
   }
-  static Future<dynamic>  resetChat() async {
-    // await Hive.openBox<UserModel>('users');
-    Box box = Hive.box<UserModel>('users');
-    UserModel user = box.get('user');
+
+  static Future<dynamic> resetChat() async {
+    Box userBox;
+    if (Hive.isBoxOpen('users')) {
+      userBox = Hive.box<UserModel>('users');
+    } else {
+      userBox = await Hive.openBox<UserModel>('users');
+    }
+    UserModel user = userBox.get('user');
     NetworkHelper networkHelper =
         NetworkHelper("http://192.168.20.246:5000/message/reset");
-    final responseBody = await networkHelper.postData({'userId': user.userId},token: user.token);
+    final responseBody = await networkHelper
+        .postData({'userId': user.userId}, token: user.token);
 
     return responseBody;
   }
@@ -54,6 +67,7 @@ class ApiService {
     String email,
     String password,
   ) async {
+    Box userBox;
     NetworkHelper networkHelper =
         NetworkHelper("http://192.168.20.246:5000/users/register");
     final responseBody = await networkHelper.postData({
@@ -61,13 +75,20 @@ class ApiService {
       'email': email,
       'password': password,
     });
-    
+
     if (responseBody['error'] == null) {
-      UserModel user = UserModel(userId: responseBody['userId'], username: responseBody['username'], email: responseBody['email'], token: responseBody['token']);
-      await Hive.openBox<UserModel>('users');
-      Box box = Hive.box<UserModel>('users');
-      await box.clear(); 
-      await box.put('user', user);
+      UserModel user = UserModel(
+          userId: responseBody['userId'],
+          username: responseBody['username'],
+          email: responseBody['email'],
+          token: responseBody['token']);
+      if (Hive.isBoxOpen('users')) {
+        userBox = Hive.box<UserModel>('users');
+      } else {
+        userBox = await Hive.openBox<UserModel>('users');
+      }
+      await userBox.clear();
+      await userBox.put('user', user);
     }
     await Hive.openBox<Message>('messages');
     final Box<Message> messagesBox = Hive.box<Message>('messages');
@@ -76,18 +97,32 @@ class ApiService {
   }
 
   static Future<dynamic> login(String email, String password) async {
+    Box userBox;
+    Box<Message> messagesBox;
+    if (Hive.isBoxOpen('messages')) {
+      messagesBox = Hive.box<Message>('messages');
+    } else {
+      messagesBox = await Hive.openBox<Message>('messages');
+    }
     NetworkHelper networkHelper =
         NetworkHelper("http://192.168.20.246:5000/users/login");
     final responseBody = await networkHelper.postData({
       'email': email,
       'password': password,
     });
-     if (responseBody['error'] == null) {
-      UserModel user = UserModel(userId: responseBody['userId'], username: responseBody['username'], email: responseBody['email'], token: responseBody['token']);
-      // await Hive.openBox<UserModel>('users');
-      Box box = Hive.box<UserModel>('users');
-      await box.clear(); 
-      await box.put('user', user);
+      if (responseBody['error'] == null) {
+      UserModel user = UserModel(
+          userId: responseBody['userId'],
+          username: responseBody['username'],
+          email: responseBody['email'],
+          token: responseBody['token']);
+      if (Hive.isBoxOpen('users')) {
+        userBox = Hive.box<UserModel>('users');
+      } else {
+        userBox = await Hive.openBox<UserModel>('users');
+      }
+      await userBox.clear();
+      await userBox.put('user', user);
     }
     List<Message> messages = [];
     List<dynamic> resMessages = responseBody['messages'];
@@ -100,11 +135,9 @@ class ApiService {
       messages.add(message);
     }
 
-    // await Hive.openBox<Message>('messages');
-    Box<Message> messageBox = Hive.box<Message>('messages');
-    await messageBox.clear();
-    await messageBox.addAll(messages);
-  
+    await messagesBox.clear();
+    await messagesBox.addAll(messages);
+
     return responseBody;
   }
 }

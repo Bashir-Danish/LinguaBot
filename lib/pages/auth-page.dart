@@ -372,15 +372,16 @@ class _AuthPageState extends State<AuthPage> {
     }
     setState(() {
       _loginLoader = true;
-      errorMessage = '';
+      // errorMessage = '';
     });
     try {
       var response = await ApiService.login(email, password);
 
-      if (response.containsKey('error')) {
+        print(response);
+     if (response.containsKey('error')) {
         setState(() {
           errorMessage = response['error'];
-          _signUpLoader = false;
+          _loginLoader = false;
         });
       }
     } catch (e) {
