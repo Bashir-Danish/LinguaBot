@@ -2,7 +2,7 @@ import 'package:hive/hive.dart';
 
 part 'message_model.g.dart';
 
-@HiveType(typeId: 0)
+@HiveType(typeId: 1)
 class Message {
   @HiveField(0)
   final String userId;

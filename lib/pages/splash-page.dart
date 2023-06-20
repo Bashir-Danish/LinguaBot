@@ -1,10 +1,41 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import 'package:linguabot/models/user_model.dart';
 import 'package:linguabot/pages/home-page.dart';
 import 'package:linguabot/utils/constants.dart';
 import 'package:linguabot/pages/auth-page.dart';
 
-class SplashPage extends StatelessWidget {
+class SplashPage extends StatefulWidget {
   const SplashPage({Key? key}) : super(key: key);
+
+  @override
+  State<SplashPage> createState() => _SplashPageState();
+}
+
+class _SplashPageState extends State<SplashPage> {
+  Future<void> redirectPage() async {
+    Box box = Hive.box<UserModel>('users');
+    UserModel? user = box.get('user'); // Note the nullable type
+
+    if (user != null && user is UserModel) {
+      if (user.token != null && user.token != '') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => MyHomePage()),
+        );
+      } else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => AuthPage()),
+        );
+      }
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => AuthPage()),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,8 +47,8 @@ class SplashPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Container(
-              margin:const EdgeInsets.symmetric(vertical: 25),
-              child:const Column(
+              margin: const EdgeInsets.symmetric(vertical: 25),
+              child: const Column(
                 children: [
                   Text(
                     'Welcome to',
@@ -31,12 +62,11 @@ class SplashPage extends StatelessWidget {
                     'LinguaBot',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontFamily: 'Bitter',
-                      fontSize: 36,
-                      fontWeight: FontWeight.w900,
-                      color: kPrimaryColor,
-                      letterSpacing: 5
-                    ),
+                        fontFamily: 'Bitter',
+                        fontSize: 36,
+                        fontWeight: FontWeight.w900,
+                        color: kPrimaryColor,
+                        letterSpacing: 5),
                   ),
                 ],
               ),
@@ -44,32 +74,34 @@ class SplashPage extends StatelessWidget {
             const Expanded(
               child: CardBox(
                 title: 'Chat',
-                text: 'Conversion practice, exercises,feedback and personalization with chatbot. Translation assistance and cultural info included.',
+                text:
+                    'Conversion practice, exercises,feedback and personalization with chatbot. Translation assistance and cultural info included.',
               ),
             ),
             const Expanded(
               child: CardBox(
                 title: 'Translate',
-                text: 'You can translate individual words and their various forms. Additionally, your app has the capability to translate entire sentences and provide paraphrases',
+                text:
+                    'You can translate individual words and their various forms. Additionally, your app has the capability to translate entire sentences and provide paraphrases',
               ),
             ),
             const Expanded(
               child: CardBox(
                 title: 'Voice',
-                text: 'Mic captures voice, converts to text, matched with correct pronunciations, feedback given. User can have exercises to improve',
+                text:
+                    'Mic captures voice, converts to text, matched with correct pronunciations, feedback given. User can have exercises to improve',
               ),
             ),
             Container(
-              padding:const EdgeInsets.symmetric(vertical: 10),
+              padding: const EdgeInsets.symmetric(vertical: 10),
               child: IconButton(
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => AuthPage()),
-                  );
+                  redirectPage();
                 },
-                icon: const Icon(Icons.arrow_forward_ios_outlined,
-                  color:kPrimaryColor,),
+                icon: const Icon(
+                  Icons.arrow_forward_ios_outlined,
+                  color: kPrimaryColor,
+                ),
               ),
             ),
           ],
@@ -89,7 +121,7 @@ class CardBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color:const Color(0xFFFFFFFF),
+      color: const Color(0xFFFFFFFF),
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       elevation: 5,
       shape: RoundedRectangleBorder(

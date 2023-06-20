@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:linguabot/models/message_model.dart';
+import 'package:linguabot/models/user_model.dart';
+import 'package:linguabot/pages/splash-page.dart';
 import 'package:linguabot/pages/translate-page.dart';
 import 'package:linguabot/pages/chat-page.dart';
 import 'package:linguabot/pages/voice-page.dart';
@@ -16,7 +17,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-final ValueNotifier<bool> msgClearedNotifier = ValueNotifier(false);
+  final ValueNotifier<bool> msgClearedNotifier = ValueNotifier(false);
   @override
   void initState() {
     super.initState();
@@ -24,12 +25,20 @@ final ValueNotifier<bool> msgClearedNotifier = ValueNotifier(false);
   }
 
   @override
-  void dispose(){
+  void dispose() {
     _tabController.dispose();
     super.dispose();
   }
 
- 
+ Future<void> logout() async {
+   Box user = Hive.box<UserModel>('users');
+    await user.clear();
+     // ignore: use_build_context_synchronously
+     Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) =>const SplashPage()),
+      );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,26 +66,31 @@ final ValueNotifier<bool> msgClearedNotifier = ValueNotifier(false);
           actions: [
             PopupMenuButton<String>(
               itemBuilder: (BuildContext context) => [
-                 PopupMenuItem<String>(
+                PopupMenuItem<String>(
                   value: 'logout',
                   child: TextButton(
                     onPressed: () {
+                      logout();
                     },
-                    child:const Text('Logout',style: TextStyle(color: Colors.black),),
+                    child: const Text(
+                      'Logout',
+                      style: TextStyle(color: Colors.black),
+                    ),
                   ),
                 ),
-                 PopupMenuItem<String>(
+                PopupMenuItem<String>(
                   value: 'reset_chat',
                   child: TextButton(
                     onPressed: () {
                       setState(() {
-                        
-                      msgClearedNotifier.value = true;
+                        msgClearedNotifier.value = true;
                       });
                     },
-                    child:const Text('Reset',style: TextStyle(color: Colors.black),),
+                    child: const Text(
+                      'Reset',
+                      style: TextStyle(color: Colors.black),
+                    ),
                   ),
-                  
                 ),
               ],
             ),
@@ -118,18 +132,12 @@ final ValueNotifier<bool> msgClearedNotifier = ValueNotifier(false);
         controller: _tabController,
         children: <Widget>[
           TranslatePage(),
-          ChatPage(msgClearedNotifier: msgClearedNotifier,),
+          ChatPage(
+            msgClearedNotifier: msgClearedNotifier,
+          ),
           const VoicePage(),
         ],
       ),
     );
   }
 }
-
-
-
-
-// Future<void> deleteAllMessages() async {
-//   final Box<Message> messagesBox = Hive.box<Message>('messages');
-//   await messagesBox.clear();
-// }

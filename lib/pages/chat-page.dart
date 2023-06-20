@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:linguabot/components/chat_widget.dart';
+import 'package:linguabot/models/user_model.dart';
 import 'package:linguabot/services/api_services.dart';
 import 'package:linguabot/utils/constants.dart';
 import 'package:hive/hive.dart';
@@ -23,8 +24,6 @@ class _ChatPageState extends State<ChatPage> {
   late TextEditingController _textEditingController;
   late ScrollController _scrollController;
   late FocusNode focusNode;
-
-  
 
 // --------  Lifecycle hooks ---------//
   @override
@@ -108,7 +107,7 @@ class _ChatPageState extends State<ChatPage> {
                       child: TextField(
                         focusNode: focusNode,
                         controller: _textEditingController,
-                        onSubmitted: (value) async{
+                        onSubmitted: (value) async {
                           await sendMessageFCT();
                         },
                         decoration: const InputDecoration.collapsed(
@@ -150,9 +149,14 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Future<void> onTagPressed(String tag) async {
+    await Hive.openBox<UserModel>('users');
+    Box box = Hive.box<UserModel>('users');
+    UserModel user = box.get('user');
+    await Hive.openBox<Message>('messages');
     String messageText = kTags[tag]!;
+
     Message userMessage = Message(
-      userId: '6489e8df31bd4b3e10691e58',
+      userId: user.userId,
       message: tag,
       isUser: true,
       msgType: 'msg',
@@ -166,12 +170,16 @@ class _ChatPageState extends State<ChatPage> {
       scrollListToBottom();
     });
     try {
-      List<Message> botMessages = await ApiService.sendMessage(chatStory: [
-        {
-          'role': 'user',
-          'content': messageText,
-        }
-      ], userId: '6489e8df31bd4b3e10691e58');
+      List<Message> botMessages = await ApiService.sendMessage(
+        userId: user.userId,
+        newMsg: tag,
+        chatStory: [
+          {
+            'role': 'user',
+            'content': messageText,
+          }
+        ],
+      );
 
       for (Message botMessage in botMessages) {
         Hive.box<Message>('messages').add(botMessage);
@@ -199,8 +207,12 @@ class _ChatPageState extends State<ChatPage> {
 
   Future<void> sendMessageFCT() async {
     String messageText = _textEditingController.text;
+    await Hive.openBox<UserModel>('users');
+    Box box = Hive.box<UserModel>('users');
+    UserModel user = box.get('user');
+
     Message userMessage = Message(
-      userId: '6489e8df31bd4b3e10691e58',
+      userId: user.userId,
       message: messageText,
       isUser: true,
       msgType: 'msg',
@@ -221,7 +233,7 @@ class _ChatPageState extends State<ChatPage> {
     }).toList();
     try {
       List<Message> botMessages = await ApiService.sendMessage(
-          chatStory: previous, userId: '6489e8df31bd4b3e10691e58');
+          userId: user.userId, newMsg: messageText, chatStory: previous);
 
       for (Message botMessage in botMessages) {
         Hive.box<Message>('messages').add(botMessage);

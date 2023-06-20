@@ -1,41 +1,41 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'message_model.dart';
+part of 'user_model.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class MessageAdapter extends TypeAdapter<Message> {
+class UserModelAdapter extends TypeAdapter<UserModel> {
   @override
-  final int typeId = 1;
+  final int typeId = 0;
 
   @override
-  Message read(BinaryReader reader) {
+  UserModel read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return Message(
+    return UserModel(
       userId: fields[0] as String,
-      message: fields[1] as String,
-      isUser: fields[2] as bool,
-      msgType: fields[3] as dynamic,
+      username: fields[1] as String,
+      email: fields[2] as String,
+      token: fields[3] as dynamic,
     );
   }
 
   @override
-  void write(BinaryWriter writer, Message obj) {
+  void write(BinaryWriter writer, UserModel obj) {
     writer
       ..writeByte(4)
       ..writeByte(0)
       ..write(obj.userId)
       ..writeByte(1)
-      ..write(obj.message)
+      ..write(obj.username)
       ..writeByte(2)
-      ..write(obj.isUser)
+      ..write(obj.email)
       ..writeByte(3)
-      ..write(obj.msgType);
+      ..write(obj.token);
   }
 
   @override
@@ -44,7 +44,7 @@ class MessageAdapter extends TypeAdapter<Message> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is MessageAdapter &&
+      other is UserModelAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
