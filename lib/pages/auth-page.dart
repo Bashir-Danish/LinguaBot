@@ -35,7 +35,7 @@ class _AuthPageState extends State<AuthPage> {
     _signupEmailController = TextEditingController();
     _signupPassController = TextEditingController();
     _signupUsrenameController = TextEditingController();
-
+    redirectPage();
     super.initState();
   }
 
@@ -47,6 +47,30 @@ class _AuthPageState extends State<AuthPage> {
     _signupPassController.dispose();
 
     super.dispose();
+  }
+
+  Future<void> redirectPage() async {
+    Box userBox;
+    if (Hive.isBoxOpen('users')) {
+      userBox = Hive.box<UserModel>('users');
+    } else {
+      userBox = await Hive.openBox<UserModel>('users');
+    }
+    UserModel? user = userBox.get('user');
+
+    if (user != null && user is UserModel) {
+      if (user.token != null && user.token != '') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => MyHomePage()),
+        );
+      } else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => AuthPage()),
+        );
+      }
+    }
   }
 
   @override
@@ -354,6 +378,7 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   Future<void> login() async {
+    print('send');
     Box userBox;
     if (Hive.isBoxOpen('users')) {
       userBox = Hive.box<UserModel>('users');
@@ -377,8 +402,8 @@ class _AuthPageState extends State<AuthPage> {
     try {
       var response = await ApiService.login(email, password);
 
-        print(response);
-     if (response.containsKey('error')) {
+      print(response);
+      if (response.containsKey('error')) {
         setState(() {
           errorMessage = response['error'];
           _loginLoader = false;

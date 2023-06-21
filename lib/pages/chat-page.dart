@@ -66,7 +66,7 @@ class _ChatPageState extends State<ChatPage> {
                       style: kTagStyle,
                       child: Text(
                         tag,
-                        style: TextStyle(color: Colors.black),
+                        style:const TextStyle(color: Colors.black,fontFamily: 'Lexend'),
                       ),
                     ),
                   );
@@ -87,19 +87,19 @@ class _ChatPageState extends State<ChatPage> {
             ),
             if (_isTyping) ...[
               const SpinKitThreeBounce(
-                color: Colors.black,
-                size: 18,
+                color: kPrimaryColor,
+                size: 20,
               ),
             ],
             Material(
               color: const Color(0xFFF8F7F7),
-              elevation: 10,
+              elevation: 15,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(25.0),
                 topRight: Radius.circular(25.0),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(25.0),
+                padding: const EdgeInsets.all(20.0),
                 child: Row(
                   children: [
                     Expanded(
@@ -112,7 +112,7 @@ class _ChatPageState extends State<ChatPage> {
                         decoration: const InputDecoration.collapsed(
                           hintText: 'How can I help you',
                           hintStyle:
-                              TextStyle(color: Colors.grey, fontSize: 18),
+                              TextStyle(color: Colors.grey, fontSize: 18,fontFamily: 'Lexend'),
                         ),
                       ),
                     ),

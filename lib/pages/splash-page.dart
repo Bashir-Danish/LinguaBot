@@ -15,7 +15,7 @@ class SplashPage extends StatefulWidget {
 class _SplashPageState extends State<SplashPage> {
   Future<void> redirectPage() async {
     Box userBox;
-   if (Hive.isBoxOpen('users')) {
+    if (Hive.isBoxOpen('users')) {
       userBox = Hive.box<UserModel>('users');
     } else {
       userBox = await Hive.openBox<UserModel>('users');
@@ -125,6 +125,9 @@ class CardBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
+    double fontSize = screenWidth * 0.04;
     return Card(
       color: const Color(0xFFFFFFFF),
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -154,8 +157,8 @@ class CardBox extends StatelessWidget {
                     child: Text(
                       text,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 20,
+                      style: TextStyle(
+                        fontSize: fontSize,
                       ),
                     ),
                   ),

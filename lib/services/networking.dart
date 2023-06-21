@@ -29,6 +29,7 @@ class NetworkHelper {
         headers['Authorization'] = token;
       }
 
+print(url);
       http.Response response = await http.post(
         Uri.parse(url),
         body: jsonEncode(data),

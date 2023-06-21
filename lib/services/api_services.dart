@@ -14,7 +14,7 @@ class ApiService {
     Box box = Hive.box<UserModel>('users');
     UserModel user = box.get('user');
     NetworkHelper networkHelper =
-        NetworkHelper("http://192.168.20.246:5000/message/conversation");
+        NetworkHelper("https://linguabot.mortezaom.dev/message/conversation");
     final responseBody = await networkHelper.postData({
       'userId': userId,
       'newMessage': newMsg,
@@ -39,7 +39,7 @@ class ApiService {
     }
     UserModel user = userBox.get('user');
     NetworkHelper networkHelper =
-        NetworkHelper("http://192.168.20.246:5000/message/translate");
+        NetworkHelper("https://linguabot.mortezaom.dev/message/translate");
     final responseBody =
         await networkHelper.postData({'text': text}, token: user.token);
 
@@ -55,7 +55,7 @@ class ApiService {
     }
     UserModel user = userBox.get('user');
     NetworkHelper networkHelper =
-        NetworkHelper("http://192.168.20.246:5000/message/reset");
+        NetworkHelper("https://linguabot.mortezaom.dev/message/reset");
     final responseBody = await networkHelper
         .postData({'userId': user.userId}, token: user.token);
 
@@ -69,7 +69,7 @@ class ApiService {
   ) async {
     Box userBox;
     NetworkHelper networkHelper =
-        NetworkHelper("http://192.168.20.246:5000/users/register");
+        NetworkHelper("https://linguabot.mortezaom.dev/users/register");
     final responseBody = await networkHelper.postData({
       'username': username,
       'email': email,
@@ -105,7 +105,7 @@ class ApiService {
       messagesBox = await Hive.openBox<Message>('messages');
     }
     NetworkHelper networkHelper =
-        NetworkHelper("http://192.168.20.246:5000/users/login");
+        NetworkHelper("https://linguabot.mortezaom.dev/users/login");
     final responseBody = await networkHelper.postData({
       'email': email,
       'password': password,

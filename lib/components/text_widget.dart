@@ -10,12 +10,16 @@ class TextWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+   double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
+    double responsiveFontSize = (fontSize / 414.0) * screenWidth; 
     return Text(
       label,
       style: TextStyle(
         color: color ?? Colors.grey,
-        fontSize: fontSize,
-        fontWeight: fontWeight?? FontWeight.w500
+        fontSize: responsiveFontSize,
+        fontWeight: fontWeight?? FontWeight.w500,
+        fontFamily: 'Lexend'
       ),
     );
   }
