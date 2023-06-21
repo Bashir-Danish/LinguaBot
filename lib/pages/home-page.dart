@@ -4,6 +4,7 @@ import 'package:linguabot/pages/splash-page.dart';
 import 'package:linguabot/pages/translate-page.dart';
 import 'package:linguabot/pages/chat-page.dart';
 import 'package:linguabot/pages/voice-page.dart';
+import 'package:linguabot/services/api_services.dart';
 import 'package:linguabot/utils/constants.dart';
 import 'package:hive/hive.dart';
 
@@ -105,10 +106,11 @@ class _MyHomePageState extends State<MyHomePage>
                 PopupMenuItem<String>(
                   value: 'reset_chat',
                   child: TextButton(
-                    onPressed: () {
+                    onPressed: () async{
                       setState(() {
                         msgClearedNotifier.value = true;
                       });
+                      await ApiService.resetChat();
                     },
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,

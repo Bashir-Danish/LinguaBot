@@ -41,6 +41,7 @@ TextStyle kTitleStyle = const TextStyle(
 );
 
 Map<String, String> kTags = {
+  'Greetings': 'How can I greet someone in English?',
   'Grammar': 'Can you provide information about the grammar rules in English?',
   'Part of Speech':
       'Could you explain the concept of parts of speech in English?',

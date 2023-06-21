@@ -78,7 +78,10 @@ class _TranslatePageState extends State<TranslatePage> {
               Text(_language1),
               TextButton(
                 onPressed: _switchLanguages,
-                child: const Icon(Icons.swap_horiz,color: kPrimaryColor,),
+                child: const Icon(
+                  Icons.swap_horiz,
+                  color: kPrimaryColor,
+                ),
               ),
               Text(_language2),
             ],
@@ -100,6 +103,7 @@ class _TranslatePageState extends State<TranslatePage> {
                 textDirection: _language1 == 'Persian'
                     ? TextDirection.rtl
                     : TextDirection.ltr,
+                textAlignVertical: TextAlignVertical.top,
               ),
             ),
           ),
@@ -136,6 +140,7 @@ class _TranslatePageState extends State<TranslatePage> {
                         _isFocused = true;
                       });
                     },
+                    textAlignVertical: TextAlignVertical.top,
                   ),
                   if (_loading)
                     const Center(

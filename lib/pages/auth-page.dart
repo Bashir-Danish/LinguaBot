@@ -27,6 +27,7 @@ class _AuthPageState extends State<AuthPage> {
 
   late TextEditingController _signupPassController;
   String? errorMessage;
+  String? errorMessage2;
   late Box userData;
   @override
   void initState() {
@@ -204,7 +205,7 @@ class _AuthPageState extends State<AuthPage> {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              errorMessage ?? '',
+                              errorMessage2 ?? '',
                               style: const TextStyle(
                                 color: Colors.red,
                               ),
@@ -391,13 +392,13 @@ class _AuthPageState extends State<AuthPage> {
 
     if (email.isEmpty || password.isEmpty) {
       setState(() {
-        errorMessage = 'Please fill inputs';
+        errorMessage2 = 'Please fill inputs';
       });
       return;
     }
     setState(() {
       _loginLoader = true;
-      // errorMessage = '';
+      errorMessage2 = '';
     });
     try {
       var response = await ApiService.login(email, password);
@@ -405,7 +406,7 @@ class _AuthPageState extends State<AuthPage> {
       print(response);
       if (response.containsKey('error')) {
         setState(() {
-          errorMessage = response['error'];
+          errorMessage2 = response['error'];
           _loginLoader = false;
         });
       }
@@ -417,7 +418,6 @@ class _AuthPageState extends State<AuthPage> {
       });
     }
     UserModel? user = userBox.get('user');
-
     if (user != null && user is UserModel) {
       if (user.token != null && user.token != '') {
         Navigator.push(

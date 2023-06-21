@@ -159,6 +159,7 @@ class CardBox extends StatelessWidget {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: fontSize,
+                        fontFamily: 'Lexend'
                       ),
                     ),
                   ),
