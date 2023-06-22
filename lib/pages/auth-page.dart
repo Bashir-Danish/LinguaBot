@@ -59,8 +59,8 @@ class _AuthPageState extends State<AuthPage> {
     }
     UserModel? user = userBox.get('user');
 
-    if (user != null && user is UserModel) {
-      if (user.token != null && user.token != '') {
+    if (user != null) {
+      if (user.token != '') {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => MyHomePage()),
@@ -331,25 +331,28 @@ class _AuthPageState extends State<AuthPage> {
   //// -------------------- ّFunctions ------------------////
 
   Future<void> signup() async {
+    String username = _signupUsrenameController.text;
+    String email = _signupEmailController.text;
+    String password = _signupPassController.text;
+    if (username.isEmpty || email.isEmpty || password.isEmpty) {
+      setState(() {
+        _signUpLoader = false;
+        errorMessage = 'Please fill inputs';
+      });
+      return;
+    }
     Box userBox;
     if (Hive.isBoxOpen('users')) {
       userBox = Hive.box<UserModel>('users');
     } else {
       userBox = await Hive.openBox<UserModel>('users');
     }
-    String username = _signupUsrenameController.text;
-    String email = _signupEmailController.text;
-    String password = _signupPassController.text;
+
     setState(() {
       _signUpLoader = true;
       errorMessage = '';
     });
-    if (username.isEmpty || email.isEmpty || password.isEmpty) {
-      setState(() {
-        _signUpLoader = true;
-        errorMessage = 'Please fill inputs';
-      });
-    }
+
     try {
       var response = await ApiService.signup(username, email, password);
 
@@ -364,12 +367,16 @@ class _AuthPageState extends State<AuthPage> {
     } finally {
       setState(() {
         _signUpLoader = false;
+        _signupUsrenameController.text = '';
+        _signupEmailController.text = '';
+        _signupPassController.text = '';
+        _signUpLoader = true;
       });
     }
     UserModel? user = userBox.get('user');
 
-    if (user != null && user is UserModel) {
-      if (user.token != null && user.token != '') {
+    if (user != null) {
+      if (user.token != '') {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const MyHomePage()),
@@ -402,7 +409,6 @@ class _AuthPageState extends State<AuthPage> {
     });
     try {
       var response = await ApiService.login(email, password);
-
       print(response);
       if (response.containsKey('error')) {
         setState(() {

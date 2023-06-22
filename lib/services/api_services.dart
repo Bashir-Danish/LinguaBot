@@ -55,7 +55,7 @@ class ApiService {
     }
     UserModel user = userBox.get('user');
     NetworkHelper networkHelper =
-        NetworkHelper("http://192.168.20.246:5000/message/reset");
+        NetworkHelper("https://linguabot.mortezaom.dev/message/reset");
     final responseBody = await networkHelper
         .postData({'userId': user.userId}, token: user.token);
 

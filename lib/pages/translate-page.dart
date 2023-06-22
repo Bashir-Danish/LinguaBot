@@ -151,11 +151,11 @@ class _TranslatePageState extends State<TranslatePage> {
                     ),
                   if (_isFocused && !_loading)
                     Positioned(
-                      top: 8,
-                      right: 8,
+                      top: 5,
+                      right: 5,
                       child: IconButton(
                         onPressed: _copyTranslation,
-                        icon: const Icon(Icons.copy),
+                        icon: const Icon(Icons.copy,size: 16,),
                         color: kPrimaryColor,
                       ),
                     ),
